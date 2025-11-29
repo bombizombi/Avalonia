@@ -302,10 +302,10 @@ export class InputHelper {
             : new Uint8Array(await blob.arrayBuffer());
     }
 
-    public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {
-        const keySub = this.subscribeKeyEvents(element, topLevelId);
+    public static subscribeInputEvents(element: HTMLInputElement, inputElement: HTMLInputElement, topLevelId: number) {
+        const keySub = this.subscribeKeyEvents(element, inputElement, topLevelId);
         const pointerSub = this.subscribePointerEvents(element, topLevelId);
-        const textSub = this.subscribeTextEvents(element, topLevelId);
+        const textSub = this.subscribeTextEvents(element, inputElement, topLevelId);
         const dndSub = this.subscribeDropEvents(element, topLevelId);
         const paneSub = this.subscribeKeyboardGeometryChange(element, topLevelId);
 
@@ -318,11 +318,43 @@ export class InputHelper {
         };
     }
 
-    public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
+    public static tracerOverwatch(message: string): void {
+        JsExports.InputHelper.TracerOverwatchLog(message);
+    }
+
+    public static directLog(message: string): void {
+        fetch("https://www.sudokustars.com/api/logs", {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain; charset=utf-8"
+            },
+            body: message
+        }).catch(() => {
+            // Silently ignore network/CORS errors for fire-and-forget logging
+        });
+    }
+
+    public static subscribeKeyEvents(element: HTMLInputElement, inputElement: HTMLInputElement, topLevelId: number) {
+        const localTracerOverwatch = (msg: string) => {
+            const start = inputElement.selectionStart ?? -1; // Use -1 or 0 as fallback if null
+            const end = inputElement.selectionEnd ?? -1;
+            const cont = inputElement.value;
+
+            InputHelper.tracerOverwatch(`${msg}                      cont:<${String(cont)}> sstart:${start} send:${end}`);
+        };
+
         const keyDownHandler = (args: KeyboardEvent) => {
             JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
+                    console.log("AAA OnKeyDown input.ts line 342 key:", args.key, ", handled:", handled, ", keyCode: ", args.keyCode);
+                    // InputHelper.tracerOverwatch(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+                    localTracerOverwatch(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+                    InputHelper.directLog(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+                    // turn direct log off
+
                     if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                        localTracerOverwatch(`OnKeyDown input.ts line 347: ${args.key}, calling prevendDefault `);
+
                         args.preventDefault();
                     }
                 });
@@ -332,6 +364,8 @@ export class InputHelper {
         const keyUpHandler = (args: KeyboardEvent) => {
             JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
+                    localTracerOverwatch(`tracer keyup input.ts line 358 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+
                     if (!handled) {
                         args.preventDefault();
                     }
@@ -352,8 +386,19 @@ export class InputHelper {
 
     public static subscribeTextEvents(
         element: HTMLInputElement,
+        inputElement: HTMLInputElement,
         topLevelId: number) {
+        const localTracerOverwatch = (msg: string) => {
+            const start = inputElement.selectionStart ?? -1; // Use -1 or 0 as fallback if null
+            const end = inputElement.selectionEnd ?? -1;
+            const cont = inputElement.value;
+
+            InputHelper.tracerOverwatch(`${msg}                      cont:<${String(cont)}> sstart:${start} send:${end}`);
+        };
+
         const compositionStartHandler = (args: CompositionEvent) => {
+            InputHelper.tracerOverwatch("input.ts line 382 CompositionStart ");
+
             JsExports.InputHelper.OnCompositionStart(topLevelId);
         };
         element.addEventListener("compositionstart", compositionStartHandler);
@@ -372,16 +417,30 @@ export class InputHelper {
                 end = start + 2;
             }
 
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
+            // InputHelper.tracerOverwatch(`input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
+            localTracerOverwatch(`input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
+            // Debug the actual data being input
+            if (args.data) {
+                // InputHelper.tracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
+                localTracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
+            }
+
+            // InputHelper.tracerOverwatch(`tracer keyup input.ts line 351 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+
+            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.data ?? "");
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
+            InputHelper.tracerOverwatch(`input.ts line 413 compositionUpdate data= ${String(args.data)} `);
+
             JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
         };
         element.addEventListener("compositionupdate", compositionUpdateHandler);
 
         const compositionEndHandler = (args: CompositionEvent) => {
+            InputHelper.tracerOverwatch("input.ts line 420 compositionEnd");
+
             JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
             args.preventDefault();
         };
@@ -389,6 +448,7 @@ export class InputHelper {
 
         return () => {
             element.removeEventListener("compositionstart", compositionStartHandler);
+            element.removeEventListener("beforeinput", beforeInputHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
         };

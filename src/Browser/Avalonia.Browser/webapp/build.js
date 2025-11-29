@@ -6,7 +6,7 @@ require("esbuild").build({
     ],
     outdir: "../staticwebassets",
     bundle: true,
-    minify: true,
+    minify: false,
     format: "esm",
     target: "es2019",
     platform: "browser",

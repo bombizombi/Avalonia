@@ -6,6 +6,7 @@ using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Browser;
 
@@ -25,6 +26,9 @@ internal class BrowserInputHandler
 
     public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, JSObject inputElement, int topLevelId)
     {
+
+        Console.WriteLine("BBB BrowserInputHandler.cs");
+
         _topLevelImpl = topLevelImpl;
         _container = container ?? throw new ArgumentNullException(nameof(container));
 
@@ -40,7 +44,7 @@ internal class BrowserInputHandler
         TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
         InputPane = new BrowserInputPane();
 
-        InputHelper.SubscribeInputEvents(container, topLevelId);
+        InputHelper.SubscribeInputEvents(container, inputElement, topLevelId);
     }
 
     public BrowserTextInputMethod TextInputMethod { get; }
@@ -229,11 +233,14 @@ internal class BrowserInputHandler
 
     public bool OnKeyDown(string code, string key, int modifier)
     {
+        TracerOverwatch.TracerOverwatch.Log($"BIH.OnKeyDown BrowserInputHandler.cs 235, code {code} key {key}");
+
         var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
         if (!handled && key.Length == 1)
         {
             handled = RawTextEvent(key);
+            TracerOverwatch.TracerOverwatch.Log($"BrowserInputHandler.cs 241, calling RawTextEvent(key) returned handled:{handled} ");
         }
 
         return handled;
@@ -241,6 +248,7 @@ internal class BrowserInputHandler
 
     public bool OnKeyUp(string code, string key, int modifier)
     {
+        TracerOverwatch.TracerOverwatch.Log($"BIH.OnKeyUp BrowserInputHandler.cs 250, code {code} key {key}");
         return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
     }
 
@@ -308,6 +316,9 @@ internal class BrowserInputHandler
         if (_inputRoot is null)
             return false;
 
+            TracerOverwatch.TracerOverwatch.Log($"  RawKeyboardEvent browserInputHandler.cs 319 code={domCode} key={domKey}");
+
+
         var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
         var key = KeyInterop.KeyFromDomKey(domKey, physicalKey);
         var keySymbol = KeyInterop.KeySymbolFromDomKey(domKey);
@@ -332,6 +343,8 @@ internal class BrowserInputHandler
     {
         if (_inputRoot is { })
         {
+            TracerOverwatch.TracerOverwatch.Log($"  RawTextEvent browserInputHandler.cs line 342 text={text}");
+
             var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
             ScheduleInput(args);
 

@@ -70,6 +70,8 @@ export class WebRenderTargetRegistry {
                 if (mode === BrowserRenderingMode.Software2D) { return new SoftwareRenderTarget(canvas); }
                 return new WebGlRenderTarget(canvas, mode);
             } catch (e) {
+                console.log(`CCC Failed to create render target for mode ${mode}`, e);
+
                 let message = "";
                 if (e instanceof Error) { message = ": " + e.message; }
                 console.error(`Failed to create render target for mode ${mode} ${message}`);

@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
-    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -lGL </EmccFlags>
+    <EmccFlags Condition="'$(AvaloniaAllowWebGl2)' == 'true'">$(EmccFlags) -sUSE_WEBGL2=1 -sMAX_WEBGL_VERSION=2 -sGL_EXTENSIONS=1 -sGL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=1 -lGL </EmccFlags>
+    <EmccFlags Condition="'$(Configuration)' == 'Debug'">$(EmccFlags) -sGL_TRACK_ERRORS=1</EmccFlags>
+    <EmccFlags Condition="'$(Configuration)' == 'Release'">$(EmccFlags) -O3</EmccFlags>
     <_AvNativeBinaryType Condition="'$(WasmEnableThreads)' == 'True'">mt</_AvNativeBinaryType>
     <_AvNativeBinaryType Condition="'$(WasmEnableThreads)' != 'True'">st</_AvNativeBinaryType>
   </PropertyGroup>

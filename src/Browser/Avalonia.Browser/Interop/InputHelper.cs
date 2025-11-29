@@ -20,7 +20,7 @@ internal static partial class InputHelper
     }
 
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeInputEvents(JSObject htmlElement, int topLevelId);
+    public static partial void SubscribeInputEvents(JSObject htmlElement, JSObject inputElement, int topLevelId);
 
     [JSExport]
     public static Task<bool> OnKeyDown(int topLevelId, string code, string key, int modifier) =>
@@ -30,9 +30,20 @@ internal static partial class InputHelper
     public static Task<bool> OnKeyUp(int topLevelId, string code, string key, int modifier) =>
         RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
 
+
+    //tracer overwatch
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
+    public static Task TracerOverwatchLog(string msg)
+    {
+        TracerOverwatch.TracerOverwatch.Log($"js:{msg} ");
+        return Task.CompletedTask;
+    }
+
+
+
+    [JSExport]
+    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end, string tracerData) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end, tracerData));
 
     [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>

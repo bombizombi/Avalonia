@@ -1,7 +1,10 @@
 using System;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input.TextInput;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Avalonia.Browser;
 
@@ -100,8 +103,9 @@ internal class BrowserTextInputMethod(
         InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
     }
 
-    public void OnBeforeInput(string inputType, int start, int end)
+    public void OnBeforeInput(string inputType, int start, int end, string tracerData)
     {
+        /*
         if (inputType != "deleteByComposition")
         {
             if (inputType == "deleteContentBackward")
@@ -115,17 +119,31 @@ internal class BrowserTextInputMethod(
                 end = -1;
             }
         }
-
+        */
         if (start != -1 && end != -1 && _client != null)
         {
             _client.Selection = new TextSelection(start, end);
         }
+
+        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 127 type:{inputType} data:<{tracerData}> st:{start} end:{end}  ");
+
+        if( (inputType == "insertText") && (tracerData.Length > 0))
+        {
+            _inputHandler.RawTextEvent(tracerData);
+
+            //InputHelper.tracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
+        }
+
+
     }
 
     public void OnCompositionStart()
     {
         if (_client == null)
             return;
+
+        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 144 OnCompositionStart");
+
 
         _client.SetPreeditText(null);
         IsComposing = true;
@@ -135,6 +153,7 @@ internal class BrowserTextInputMethod(
     {
         if (_client == null)
             return;
+        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 155 OnCompositionUpdate data:<{data}> ");
 
         _client.SetPreeditText(data);
     }
@@ -143,6 +162,7 @@ internal class BrowserTextInputMethod(
     {
         if (_client == null)
             return;
+        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 164 OnCompositionEnd data:<{data}> ");
 
         IsComposing = false;
 

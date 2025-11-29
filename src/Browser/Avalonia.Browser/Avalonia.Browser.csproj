@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <Nullable>enable</Nullable>
@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../../Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\..\..\..\..\RxElmAttempt1\TracerOverwatch\TracerOverwatch.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +55,12 @@
     <Compile Include="..\..\Shared\RawEventGrouping.cs">
       <Link>RawEventGrouping.cs</Link>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="TracerOverwatch">
+      <HintPath>..\..\..\..\..\RxElmAttempt1\TracerOverwatch\bin\Debug\net8.0\TracerOverwatch.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

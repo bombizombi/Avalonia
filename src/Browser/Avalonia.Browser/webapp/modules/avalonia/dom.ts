@@ -36,6 +36,11 @@ export class AvaloniaDOM {
         canvas.style.height = "100%";
         canvas.style.position = "absolute";
 
+        // canvas.style.top = "100";
+        // canvas.style.left = "100";
+        canvas.style.left = "100px";
+        canvas.style.top = "100px";
+
         return canvas;
     }
 
@@ -71,12 +76,15 @@ export class AvaloniaDOM {
         nativeHost.style.position = "absolute";
 
         // IME
-        const inputElement = document.createElement("input");
+        //const inputElement = document.createElement("input");
+        const inputElement = document.createElement("div");
+        inputElement.contentEditable = "true";
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
         inputElement.type = "text";
         inputElement.spellcheck = false;
+        inputElement.style.fontSize = "36px";
         inputElement.style.padding = "0";
         inputElement.style.margin = "0";
         inputElement.style.borderWidth = "0";
@@ -84,11 +92,11 @@ export class AvaloniaDOM {
         inputElement.style.overflow = "hidden";
         inputElement.style.borderStyle = "hidden";
         inputElement.style.outline = "none";
-        inputElement.style.background = "transparent";
-        inputElement.style.color = "transparent";
-        inputElement.style.display = "none";
-        inputElement.style.height = "20px";
-        inputElement.style.zIndex = "-1";
+        inputElement.style.background = "yellow";
+        inputElement.style.color = "black";
+        // inputElement.style.display = "none";
+        inputElement.style.height = "40px";
+        inputElement.style.zIndex = "100";
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
