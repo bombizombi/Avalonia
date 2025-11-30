@@ -311,7 +311,7 @@ internal class BrowserInputHandler
         return false;
     }
 
-    private bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
+    internal bool RawKeyboardEvent(RawKeyEventType type, string domCode, string domKey, RawInputModifiers modifiers)
     {
         if (_inputRoot is null)
             return false;

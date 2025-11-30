@@ -76,8 +76,8 @@ export class AvaloniaDOM {
         nativeHost.style.position = "absolute";
 
         // IME
-        //const inputElement = document.createElement("input");
-        const inputElement = document.createElement("div");
+        const inputElement = document.createElement("input");
+        // const inputElement = document.createElement("div");
         inputElement.contentEditable = "true";
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");

@@ -120,6 +120,9 @@ export class InputHelper {
     public static addBytesToWriteableClipboardItem(item: WriteableClipboardItem, format: string, value: IMemoryView) {
         const bytes = value.slice(0, value.byteLength);
         item.data[format] = new Blob([bytes], { type: format });
+
+        // const bytes = value.slice(0, value.byteLength) as Uint8Array;
+        // item.data[format] = new Blob([bytes], { type: format });
     }
 
     public static async readClipboard(window: Window): Promise<readonly ReadableDataItem[]> {
@@ -344,27 +347,32 @@ export class InputHelper {
         };
 
         const keyDownHandler = (args: KeyboardEvent) => {
+            localTracerOverwatch(`OnKeyDown input.ts line 348 BEFORE EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
+
             JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
                     console.log("AAA OnKeyDown input.ts line 342 key:", args.key, ", handled:", handled, ", keyCode: ", args.keyCode);
                     // InputHelper.tracerOverwatch(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
-                    localTracerOverwatch(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+                    localTracerOverwatch(` OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
                     InputHelper.directLog(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
                     // turn direct log off
 
                     if (!handled || this.clipboardState !== ClipboardState.Pending) {
-                        localTracerOverwatch(`OnKeyDown input.ts line 347: ${args.key}, calling prevendDefault `);
+                        localTracerOverwatch(` OnKeyDown input.ts line 347: ${args.key}, calling preventDefault `);
 
                         args.preventDefault();
                     }
                 });
+            localTracerOverwatch(`OnKeyDown input.ts line 348 AFTER  EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
         };
         element.addEventListener("keydown", keyDownHandler);
 
         const keyUpHandler = (args: KeyboardEvent) => {
+            localTracerOverwatch(`OnKeyUp input.ts line 348 BEFORE EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
+
             JsExports.InputHelper.OnKeyUp(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
-                    localTracerOverwatch(`tracer keyup input.ts line 358 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
+                    localTracerOverwatch(` tracer keyup input.ts line 358 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
 
                     if (!handled) {
                         args.preventDefault();
@@ -374,6 +382,7 @@ export class InputHelper {
             if (this.rejectClipboard) {
                 this.rejectClipboard();
             }
+            localTracerOverwatch(`OnKeyUp input.ts line 386 AFTER  EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
         };
 
         element.addEventListener("keyup", keyUpHandler);
@@ -392,6 +401,7 @@ export class InputHelper {
             const start = inputElement.selectionStart ?? -1; // Use -1 or 0 as fallback if null
             const end = inputElement.selectionEnd ?? -1;
             const cont = inputElement.value;
+            // we can also do getTargetRange
 
             InputHelper.tracerOverwatch(`${msg}                      cont:<${String(cont)}> sstart:${start} send:${end}`);
         };
@@ -404,6 +414,8 @@ export class InputHelper {
         element.addEventListener("compositionstart", compositionStartHandler);
 
         const beforeInputHandler = (args: InputEvent) => {
+            localTracerOverwatch(`OnBeforeInput input.ts line 421 BEFORE EVENT  type ${args.type} OK`);
+
             const ranges = args.getTargetRanges();
             let start = -1;
             let end = -1;
@@ -418,16 +430,19 @@ export class InputHelper {
             }
 
             // InputHelper.tracerOverwatch(`input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
-            localTracerOverwatch(`input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
+            localTracerOverwatch(` input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
             // Debug the actual data being input
             if (args.data) {
                 // InputHelper.tracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
-                localTracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
+                localTracerOverwatch(` input.ts line 405 beforeInput data: "${args.data}"`);
             }
 
             // InputHelper.tracerOverwatch(`tracer keyup input.ts line 351 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
 
             JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.data ?? "");
+
+            // args.preventDefault(); // FORCED PREVENT, does not advance the carret (text is backwards)
+            localTracerOverwatch(`OnBeforeInput input.ts line 421 AFTER  EVENT  type ${args.type} OK `);
         };
         element.addEventListener("beforeinput", beforeInputHandler);
 

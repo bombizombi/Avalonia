@@ -3,6 +3,8 @@ using System.Reflection.Metadata;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Controls.Shapes;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -133,6 +135,16 @@ internal class BrowserTextInputMethod(
 
             //InputHelper.tracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
         }
+
+        if (inputType == "deleteContentBackward")
+        {
+            //_inputHandler.RawTextEvent(tracerData);
+
+            //handled ignored
+            _inputHandler.RawKeyboardEvent(RawKeyEventType.KeyDown, "Backspace", "Backspace", (RawInputModifiers)0);
+        }
+
+
 
 
     }
