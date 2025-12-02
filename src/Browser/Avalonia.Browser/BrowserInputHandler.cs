@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Collections.Pooled;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using static System.Net.Mime.MediaTypeNames;
@@ -233,22 +234,42 @@ internal class BrowserInputHandler
 
     public bool OnKeyDown(string code, string key, int modifier)
     {
-        TracerOverwatch.TracerOverwatch.Log($"BIH.OnKeyDown BrowserInputHandler.cs 235, code {code} key {key}");
+        TracerOverwatch.HTTPLog.Log($"BIH.OnKeyDown BrowserInputHandler.cs 235, code {code} key {key}");
+
+        //public static object?                         g_savedTextBox        ; //global ref for debugging
+
+
+        TextBox second = (TextBox) TracerOverwatch.HTTPLog.g_savedTextBox!;
+        //var s = second;
+        var line = (TextBox s) => $"Second TextBox properties: {s.CaretIndex} sel: {s.SelectionStart}-{s.SelectionEnd}   text:<{s.Text}>";
+        TracerOverwatch.HTTPLog.Log($"BIH.OnKeyDown BrowserInputHandler.cs 242 {line(second)}");
+
+
+        //if we are processing beforeInput we must not process Backspace
+        //but onBeforeInput itself calls OnKeyBackspace, so filtering must be done at the same level.
+        //onBeforeInput will call RawKeyboardEvent.
+        if (key == "Backspace")
+        {
+            //return true;  //why?
+        }
+
 
         var handled = RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
         if (!handled && key.Length == 1)
         {
             handled = RawTextEvent(key);
-            TracerOverwatch.TracerOverwatch.Log($"BrowserInputHandler.cs 241, calling RawTextEvent(key) returned handled:{handled} ");
+            TracerOverwatch.HTTPLog.Log($"BrowserInputHandler.cs 241, calling RawTextEvent({key}) returned handled:{handled} ");
         }
+
+        TracerOverwatch.HTTPLog.Log($"BIH.OnKeyDown BrowserInputHandler.cs 242 {line(second)}");
 
         return handled;
     }
 
     public bool OnKeyUp(string code, string key, int modifier)
     {
-        TracerOverwatch.TracerOverwatch.Log($"BIH.OnKeyUp BrowserInputHandler.cs 250, code {code} key {key}");
+        TracerOverwatch.HTTPLog.Log($"BIH.OnKeyUp BrowserInputHandler.cs 250, code {code} key {key}");
         return RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
     }
 
@@ -316,7 +337,7 @@ internal class BrowserInputHandler
         if (_inputRoot is null)
             return false;
 
-            TracerOverwatch.TracerOverwatch.Log($"  RawKeyboardEvent browserInputHandler.cs 319 code={domCode} key={domKey}");
+            TracerOverwatch.HTTPLog.Log($"  RawKeyboardEvent browserInputHandler.cs 319 code={domCode} key={domKey}");
 
 
         var physicalKey = KeyInterop.PhysicalKeyFromDomCode(domCode);
@@ -343,7 +364,7 @@ internal class BrowserInputHandler
     {
         if (_inputRoot is { })
         {
-            TracerOverwatch.TracerOverwatch.Log($"  RawTextEvent browserInputHandler.cs line 342 text={text}");
+            TracerOverwatch.HTTPLog.Log($"  RawTextEvent browserInputHandler.cs line 342 text={text}");
 
             var args = new RawTextInputEventArgs(BrowserWindowingPlatform.Keyboard, Timestamp, _inputRoot, text);
             ScheduleInput(args);

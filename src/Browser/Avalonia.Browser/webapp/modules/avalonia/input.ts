@@ -73,6 +73,7 @@ export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
     static resolveClipboard?: (value: readonly ReadableDataItem[]) => void;
     static rejectClipboard?: (reason?: any) => void;
+    static enableIME: boolean = false; // hack, once turned on, stays on
 
     public static initializeBackgroundHandlers() {
         if (this.clipboardState !== ClipboardState.None) {
@@ -347,7 +348,17 @@ export class InputHelper {
         };
 
         const keyDownHandler = (args: KeyboardEvent) => {
-            localTracerOverwatch(`OnKeyDown input.ts line 348 BEFORE EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
+            localTracerOverwatch(`OnKeyDown 222PROJECT input.ts line 348 BEFORE EVENT  key: ${args.key}, keyCode: ${String(args.keyCode)} `);
+
+            if (args.keyCode === 229) {
+                InputHelper.enableIME = true;
+            }
+
+            if (InputHelper.enableIME) {
+                if (args.key === "Backspace") {
+                    return;
+                }
+            }
 
             JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
                 .then((handled: boolean) => {
@@ -357,10 +368,14 @@ export class InputHelper {
                     InputHelper.directLog(`OnKeyDown input.ts line 342 key: ${args.key}, handled: ${String(handled)} keyCode: ${String(args.keyCode)} `);
                     // turn direct log off
 
-                    if (!handled || this.clipboardState !== ClipboardState.Pending) {
-                        localTracerOverwatch(` OnKeyDown input.ts line 347: ${args.key}, calling preventDefault `);
+                    // unknown clipboard logic, but it calls preventDefault when it shouldn't
+                    // if (!handled || this.clipboardState !== ClipboardState.Pending) {
+                    if (!handled) {
+                        localTracerOverwatch(` OnKeyDown input.ts line 348: ${args.key}, handled is ${String(handled)} so we are CALLING PREVENTDEFAULT`);
 
                         args.preventDefault();
+                    } else {
+                        localTracerOverwatch(` OnKeyDown input.ts line 349: ${args.key}, handled is ${String(handled)} so we are not preventDflt`);
                     }
                 });
             localTracerOverwatch(`OnKeyDown input.ts line 348 AFTER  EVENT  key: ${args.key}, handled: keyCode: ${String(args.keyCode)} `);
@@ -416,6 +431,13 @@ export class InputHelper {
         const beforeInputHandler = (args: InputEvent) => {
             localTracerOverwatch(`OnBeforeInput input.ts line 421 BEFORE EVENT  type ${args.type} OK`);
 
+            if (!InputHelper.enableIME) {
+                localTracerOverwatch(`OnBeforeInput input.ts line 435 no IME, therefore abort and preventDefault ( ${args.type} )`);
+                args.preventDefault(); // we modified the _input, so do not modify it twice
+                return; // do not process beforeInput
+            }
+
+            // this has no chance of working, since we have input type=text
             const ranges = args.getTargetRanges();
             let start = -1;
             let end = -1;
@@ -424,10 +446,13 @@ export class InputHelper {
                 end = ranges[0].endOffset;
             }
 
-            if (args.inputType === "insertCompositionText") {
-                start = 2;
-                end = start + 2;
-            }
+            // wtf
+            // if (args.inputType === "insertCompositionText") {
+            //    start = 2;
+            //    end = start + 2;
+            // }
+
+            // if
 
             // InputHelper.tracerOverwatch(`input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
             localTracerOverwatch(` input.ts line 401 beforeInput ${args.inputType} ${String(start)} ${String(end)} <${String(args.data)}>`);
@@ -441,7 +466,16 @@ export class InputHelper {
 
             JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end, args.data ?? "");
 
+            // cancel events that were processed
+            if ((args.inputType === "insertText") ||
+                (args.inputType === "deleteContentBackward") ||
+                (args.inputType === "insertCompositionText")) {
+                args.preventDefault(); //
+                localTracerOverwatch(`OnBeforeInput input.ts line 421 preventing default for ${args.type} `);
+            }
+
             // args.preventDefault(); // FORCED PREVENT, does not advance the carret (text is backwards)
+
             localTracerOverwatch(`OnBeforeInput input.ts line 421 AFTER  EVENT  type ${args.type} OK `);
         };
         element.addEventListener("beforeinput", beforeInputHandler);
@@ -621,6 +655,9 @@ export class InputHelper {
         if (!inputElement) {
             return;
         }
+
+        // this.tracerOverwatch
+        InputHelper.tracerOverwatch(`                               setSurroundingText input.ts 638 txt:<${text}> selstart:${start} selend:${end}`);
 
         inputElement.value = text;
         inputElement.setSelectionRange(start, end);

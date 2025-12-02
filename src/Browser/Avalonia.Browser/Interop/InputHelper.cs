@@ -35,7 +35,7 @@ internal static partial class InputHelper
     [JSExport]
     public static Task TracerOverwatchLog(string msg)
     {
-        TracerOverwatch.TracerOverwatch.Log($"js:{msg} ");
+        TracerOverwatch.HTTPLog.Log($"js:{msg} ");
         return Task.CompletedTask;
     }
 

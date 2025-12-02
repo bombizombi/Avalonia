@@ -78,6 +78,7 @@ internal class BrowserTextInputMethod(
 
     private void SurroundingTextChanged(object? sender, EventArgs e)
     {
+        //this updates the invisible input box
         if (_client != null)
         {
             var surroundingText = _client.SurroundingText ?? "";
@@ -107,6 +108,8 @@ internal class BrowserTextInputMethod(
 
     public void OnBeforeInput(string inputType, int start, int end, string tracerData)
     {
+        bool handled;
+
         /*
         if (inputType != "deleteByComposition")
         {
@@ -127,13 +130,16 @@ internal class BrowserTextInputMethod(
             _client.Selection = new TextSelection(start, end);
         }
 
-        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 127 type:{inputType} data:<{tracerData}> st:{start} end:{end}  ");
+        TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 127 type:{inputType} data:<{tracerData}> st:{start} end:{end}  ");
 
         if( (inputType == "insertText") && (tracerData.Length > 0))
         {
-            _inputHandler.RawTextEvent(tracerData);
+            handled = _inputHandler.RawTextEvent(tracerData);
 
             //InputHelper.tracerOverwatch(`input.ts line 405 beforeInput data: "${args.data}"`);
+
+            TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 140 insertText data:<{tracerData}> st:{start} end:{end} handled:{handled}  ");
+
         }
 
         if (inputType == "deleteContentBackward")
@@ -141,7 +147,19 @@ internal class BrowserTextInputMethod(
             //_inputHandler.RawTextEvent(tracerData);
 
             //handled ignored
-            _inputHandler.RawKeyboardEvent(RawKeyEventType.KeyDown, "Backspace", "Backspace", (RawInputModifiers)0);
+            handled = _inputHandler.RawKeyboardEvent(RawKeyEventType.KeyDown, "Backspace", "Backspace", (RawInputModifiers)0);
+
+            TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 151 deleteContentBackward data:<{tracerData}> st:{start} end:{end} handled:{handled} ");
+
+        }
+
+        if ((inputType == "insertCompositionText") && (tracerData.Length > 0))
+        {
+            handled = _inputHandler.RawTextEvent(tracerData);
+
+
+            TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 140 insertCompositionText data:<{tracerData}> st:{start} end:{end} handled:{handled}  ");
+
         }
 
 
@@ -154,7 +172,7 @@ internal class BrowserTextInputMethod(
         if (_client == null)
             return;
 
-        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 144 OnCompositionStart");
+        TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 144 OnCompositionStart");
 
 
         _client.SetPreeditText(null);
@@ -165,7 +183,7 @@ internal class BrowserTextInputMethod(
     {
         if (_client == null)
             return;
-        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 155 OnCompositionUpdate data:<{data}> ");
+        TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 155 OnCompositionUpdate data:<{data}> ");
 
         _client.SetPreeditText(data);
     }
@@ -174,7 +192,7 @@ internal class BrowserTextInputMethod(
     {
         if (_client == null)
             return;
-        TracerOverwatch.TracerOverwatch.Log($"BrowserTextInputMethod.cs 164 OnCompositionEnd data:<{data}> ");
+        TracerOverwatch.HTTPLog.Log($"BrowserTextInputMethod.cs 164 OnCompositionEnd data:<{data}> ");
 
         IsComposing = false;
 
@@ -182,7 +200,7 @@ internal class BrowserTextInputMethod(
         
         if (data != null)
         {
-            _inputHandler.RawTextEvent(data);
+            //_inputHandler.RawTextEvent(data);  //handled on beforeinput event
         }
     }
 }

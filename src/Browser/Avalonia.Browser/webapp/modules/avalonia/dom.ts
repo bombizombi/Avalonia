@@ -38,8 +38,8 @@ export class AvaloniaDOM {
 
         // canvas.style.top = "100";
         // canvas.style.left = "100";
-        canvas.style.left = "100px";
-        canvas.style.top = "100px";
+        canvas.style.left = "200px";
+        canvas.style.top = "0px";
 
         return canvas;
     }
@@ -100,6 +100,9 @@ export class AvaloniaDOM {
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
+
+        inputElement.style.left = "200px";
+        inputElement.style.top = "50px";
 
         host.prepend(inputElement);
         host.prepend(nativeHost);

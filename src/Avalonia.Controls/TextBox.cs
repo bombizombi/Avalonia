@@ -1117,12 +1117,15 @@ namespace Avalonia.Controls
                 }
 
                 textBuilder.Insert(caretIndex, input);
+                caretIndex += input.Length;
 
                 var text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
-                SetCurrentValue(TextProperty, text);
+                //SetCurrentValue will trigger the invisible inputField to update its caret, so it must be correct
+                SetCurrentValue(SelectionStartProperty, caretIndex);
+                SetCurrentValue(SelectionEndProperty, caretIndex);
 
-                ClearSelection();
+                SetCurrentValue(TextProperty, text);
 
                 if (IsUndoEnabled)
                 {
@@ -1131,8 +1134,6 @@ namespace Avalonia.Controls
 
                 //Make sure updated text is in sync
                 _presenter?.SetCurrentValue(TextPresenter.TextProperty, text);
-
-                caretIndex += input.Length;
 
                 //Make sure caret is in sync
                 _presenter?.MoveCaretToTextPosition(caretIndex);
